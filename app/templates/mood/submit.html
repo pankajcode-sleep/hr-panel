@@ -1,0 +1,80 @@
+{% extends 'layouts/base.html' %}
+{% block title %}My Mood Today{% endblock %}
+
+{% block content %}
+<div class="text-center mb-4">
+    <h2>How are you feeling today? </h2>
+    <p class="text-muted">{{ today.strftime('%A, %d %B %Y') }}</p>
+</div>
+
+{% if today_mood %}
+<div class="row justify-content-center mb-4">
+    <div class="col-md-5">
+        <div class="alert alert-success text-center">
+            <h5>Already submitted!</h5>
+            <div style="font-size:3rem;">{{ today_mood.mood_emoji }}</div>
+            <strong>{{ moods[today_mood.mood].label }}</strong>
+            {% if today_mood.note %}
+            <p class="text-muted mt-2 mb-0">"{{ today_mood.note }}"</p>
+            {% endif %}
+            <small class="text-muted">You can update below</small>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="d-flex justify-content-center gap-3 mb-4 flex-wrap">
+                        {% for key, data in moods.items() %}
+                        <label style="cursor:pointer; text-align:center;">
+                            <input type="radio" name="mood" value="{{ key }}"
+                                   class="d-none mood-radio"
+                                   {{ 'checked' if today_mood and today_mood.mood == key }}>
+                            <div class="mood-option p-3 rounded-3"
+                                 style="border:2px solid {{ data.color }};
+                                        min-width:80px; transition:all 0.3s;
+                                        background:{{ data.color + '20' if today_mood and today_mood.mood == key else 'transparent' }};"
+                                 data-color="{{ data.color }}">
+                                <div style="font-size:2.5rem;">{{ data.emoji }}</div>
+                                <div style="font-size:0.8rem; font-weight:600;
+                                            color:{{ data.color }};">{{ data.label }}</div>
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Note (Optional)</label>
+                        <textarea name="note" class="form-control" rows="3"
+                                  placeholder="Share your thoughts...">{{ today_mood.note if today_mood and today_mood.note else '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100"
+                            id="submit-btn" {{ 'disabled' if not today_mood }}>
+                        Submit Mood
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.mood-radio').forEach(radio => {
+    radio.addEventListener('change', function() {
+        document.querySelectorAll('.mood-option').forEach(opt => {
+            opt.style.background = 'transparent';
+        });
+        const opt = this.parentElement.querySelector('.mood-option');
+        opt.style.background = opt.dataset.color + '20';
+        document.getElementById('submit-btn').disabled = false;
+    });
+});
+</script>
+{% endblock %}

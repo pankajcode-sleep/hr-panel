@@ -1,0 +1,110 @@
+{% extends 'layouts/base.html' %}
+{% block title %}ID Card - {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Employee ID Card</h2>
+    <div>
+        <button onclick="printCard()" class="btn btn-primary">Print / Download</button>
+        <a href="{{ url_for('employees.view_employee', id=employee.id) }}"
+           class="btn btn-secondary">Back</a>
+    </div>
+</div>
+
+<div class="d-flex justify-content-center">
+    <div id="id-card" style="width:380px; border-radius:16px; overflow:hidden;
+         box-shadow:0 8px 32px rgba(0,0,0,0.2); font-family:'Segoe UI',sans-serif;
+         background:white;">
+        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);
+                    padding:24px 20px 16px; text-align:center; color:white;">
+            <div style="font-size:22px; font-weight:700; letter-spacing:2px;">HR PANEL</div>
+            <div style="font-size:11px; color:#aaa; margin-top:2px;">EMPLOYEE IDENTITY CARD</div>
+        </div>
+
+        <div style="padding:20px 24px 16px; display:flex; gap:16px; align-items:center;">
+            <div style="width:80px; height:80px; border-radius:50%; border:3px solid #eee;
+                        overflow:hidden; flex-shrink:0;">
+                {% if employee.photo %}
+                <img src="{{ url_for('static', filename='uploads/photos/' + employee.photo) }}"
+                     style="width:100%; height:100%; object-fit:cover;">
+                {% else %}
+                <div style="width:100%; height:100%;
+                            background:linear-gradient(135deg,#667eea,#764ba2);
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:28px; color:white; font-weight:700;">
+                    {{ employee.first_name[0] }}{{ employee.last_name[0] }}
+                </div>
+                {% endif %}
+            </div>
+            <div>
+                <div style="font-size:18px; font-weight:700; color:#1a1a2e;">
+                    {{ employee.full_name }}
+                </div>
+                <div style="font-size:13px; color:#667eea; font-weight:600; margin-top:2px;">
+                    {{ employee.designation or 'Employee' }}
+                </div>
+                <div style="font-size:12px; color:#888; margin-top:4px;">
+                    {{ employee.department or 'General' }}
+                </div>
+            </div>
+        </div>
+
+        <div style="height:1px; background:#eee; margin:0 24px;"></div>
+
+        <div style="padding:14px 24px;">
+            <table style="width:100%; font-size:13px; border-collapse:collapse;">
+                <tr>
+                    <td style="padding:5px 0; color:#888; width:45%;">Employee ID</td>
+                    <td style="padding:5px 0; font-weight:600; color:#1a1a2e;">{{ employee.employee_id }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:5px 0; color:#888;">Email</td>
+                    <td style="padding:5px 0; font-weight:600; color:#1a1a2e; font-size:12px;">{{ employee.email }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:5px 0; color:#888;">Phone</td>
+                    <td style="padding:5px 0; font-weight:600; color:#1a1a2e;">{{ employee.phone or '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:5px 0; color:#888;">Blood Group</td>
+                    <td style="padding:5px 0; font-weight:600; color:#1a1a2e;">{{ employee.blood_group or '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding:5px 0; color:#888;">Status</td>
+                    <td style="padding:5px 0;">
+                        <span style="background:{{ '#d4edda' if employee.status == 'Active' else '#f8d7da' }};
+                                     color:{{ '#155724' if employee.status == 'Active' else '#721c24' }};
+                                     padding:2px 10px; border-radius:20px; font-size:11px; font-weight:600;">
+                            {{ employee.status }}
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="height:1px; background:#eee; margin:0 24px;"></div>
+
+        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e); padding:12px 24px;
+                    display:flex; justify-content:space-between; align-items:center;">
+            <div style="color:#aaa; font-size:10px;">Issued by HR Department</div>
+            <div style="background:white; color:#1a1a2e; font-size:10px; font-weight:700;
+                        padding:4px 10px; border-radius:20px;">OFFICIAL</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function printCard() {
+    const card = document.getElementById('id-card').outerHTML;
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><title>ID Card</title>
+    <style>body{margin:0;display:flex;justify-content:center;align-items:center;
+    min-height:100vh;background:#f0f0f0;font-family:'Segoe UI',sans-serif;}
+    @media print{body{background:white;}}</style></head>
+    <body>${card}<script>window.onload=function(){window.print();}<\/script></body></html>`);
+    win.document.close();
+}
+</script>
+{% endblock %}

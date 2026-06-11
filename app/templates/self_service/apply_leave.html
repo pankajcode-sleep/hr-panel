@@ -1,0 +1,104 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Apply Leave{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Apply Leave</h2>
+    <a href="{{ url_for('self_service.my_leaves') }}" class="btn btn-secondary">Back</a>
+</div>
+
+<div class="alert alert-warning">
+    <strong>⚠️ Sandwich Policy:</strong>
+    Agar Friday aur Monday dono pe leave ho, Sat+Sun bhi count honge!
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Leave Type *</label>
+                        <select name="leave_type" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            <option value="CL">CL - Casual Leave ({{ balance.casual_leave }} days)</option>
+                            <option value="SL">SL - Sick Leave ({{ balance.sick_leave }} days)</option>
+                            <option value="EL">EL - Earned Leave ({{ balance.earned_leave }} days)</option>
+                            {% if balance.comp_off > 0 %}
+                            <option value="Comp Off">Comp Off ({{ balance.comp_off }} days)</option>
+                            {% endif %}
+                            <option value="LOP">LOP - Loss of Pay</option>
+                        </select>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-bold">From Date *</label>
+                            <input type="date" name="from_date" class="form-control"
+                                   id="from_date" required
+                                   min="{{ today.strftime('%Y-%m-%d') }}">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-bold">To Date *</label>
+                            <input type="date" name="to_date" class="form-control"
+                                   id="to_date" required
+                                   min="{{ today.strftime('%Y-%m-%d') }}">
+                        </div>
+                    </div>
+                    <div class="alert alert-secondary mb-3" id="days_preview">
+                        Select dates to see total days
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Reason</label>
+                        <textarea name="reason" class="form-control" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 btn-lg">
+                        Submit Leave Application
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">Current Balance</div>
+            <div class="card-body">
+                <table class="table mb-0">
+                    <tr><td>CL</td><td class="text-end fw-bold text-primary">{{ balance.casual_leave }}</td></tr>
+                    <tr><td>SL</td><td class="text-end fw-bold text-success">{{ balance.sick_leave }}</td></tr>
+                    <tr><td>EL</td><td class="text-end fw-bold text-info">{{ balance.earned_leave }}</td></tr>
+                    <tr><td>Comp Off</td><td class="text-end fw-bold text-warning">{{ balance.comp_off }}</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updatePreview() {
+    const from = document.getElementById('from_date').value;
+    const to = document.getElementById('to_date').value;
+    if (!from || !to) return;
+    const fromDate = new Date(from);
+    const toDate = new Date(to);
+    if (toDate < fromDate) {
+        document.getElementById('days_preview').innerHTML =
+            '<span class="text-danger">To date cannot be before From date!</span>';
+        return;
+    }
+    let days = (toDate - fromDate) / (1000*60*60*24) + 1;
+    const dayAfter = new Date(toDate); dayAfter.setDate(dayAfter.getDate() + 1);
+    const dayBefore = new Date(fromDate); dayBefore.setDate(dayBefore.getDate() - 1);
+    let note = '';
+    if (dayBefore.getDay() === 0 && dayAfter.getDay() === 1) {
+        days += 2;
+        note = ' <span class="badge bg-warning text-dark">+2 Sandwich Policy</span>';
+    }
+    document.getElementById('days_preview').innerHTML =
+        `<strong>Total: ${days} days</strong>${note}`;
+}
+document.getElementById('from_date').addEventListener('change', updatePreview);
+document.getElementById('to_date').addEventListener('change', updatePreview);
+</script>
+{% endblock %}

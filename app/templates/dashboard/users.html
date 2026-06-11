@@ -1,0 +1,230 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Users & Roles</h2>
+</div>
+
+<!-- Add User -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">Add New User</div>
+    <div class="card-body">
+        <form action="{{ url_for('dashboard.add_user') }}" method="POST">
+            <div class="row g-3">
+                <div class="col-md-2">
+                    <input type="text" name="username" class="form-control"
+                           placeholder="Username" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="email" name="email" class="form-control"
+                           placeholder="Email" required>
+                </div>
+                <div class="col-md-2">
+                    <input type="password" name="password" class="form-control"
+                           placeholder="Password" required minlength="6">
+                </div>
+                <div class="col-md-2">
+                    <select name="role_id" class="form-select">
+                        <option value="">No Role</option>
+                        {% for role in roles %}
+                        <option value="{{ role.id }}">{{ role.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <!-- Employee Link -->
+                <div class="col-md-2">
+                    <select name="employee_id" class="form-select">
+                        <option value="">-- Link Employee --</option>
+                        {% for emp in unlinked_employees %}
+                        <option value="{{ emp.id }}">
+                            {{ emp.full_name }} ({{ emp.employee_id }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        Add User
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="mb-3">
+    <input type="text" id="searchInput" class="form-control"
+           placeholder="Search users...">
+</div>
+
+<!-- Users Table -->
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" id="usersTable">
+            <thead class="table-dark">
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Linked Employee</th>
+                    <th>Change Role</th>
+                    <th>Reset Pass</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr class="{{ 'table-secondary' if not user.active }}">
+                    <td>
+                        <strong>{{ user.username }}</strong>
+                        {% if user.username == 'admin' %}
+                        <span class="badge bg-danger ms-1">Super Admin</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.role %}
+                        <span class="badge bg-{{
+                            'danger' if user.role.name == 'Admin' else
+                            'primary' if user.role.name == 'HR Manager' else
+                            'secondary' }}">{{ user.role.name }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary">No Role</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if user.active else 'danger' }}">
+                            {{ 'Active' if user.active else 'Inactive' }}
+                        </span>
+                    </td>
+
+                    <!-- Linked Employee -->
+                    <td>
+                        {% if user.employee %}
+                        <span class="badge bg-success">
+                            ✅ {{ user.employee.full_name }}
+                        </span>
+                        {% else %}
+                        {% if user.username != 'admin' %}
+                        <form action="{{ url_for('dashboard.link_employee', id=user.id) }}"
+                              method="POST" class="d-flex gap-1">
+                            <select name="employee_id" class="form-select form-select-sm"
+                                    style="width:140px;">
+                                <option value="">-- Link --</option>
+                                {% for emp in unlinked_employees %}
+                                <option value="{{ emp.id }}">
+                                    {{ emp.full_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Link
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted small">N/A</span>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+
+                    <!-- Change Role -->
+                    <td>
+                        <form action="{{ url_for('dashboard.change_role', id=user.id) }}"
+                              method="POST" class="d-flex gap-1">
+                            <select name="role_id" class="form-select form-select-sm"
+                                    style="width:120px;">
+                                <option value="">No Role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}"
+                                    {{ 'selected' if user.role_id == role.id }}>
+                                    {{ role.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                        </form>
+                    </td>
+
+                    <!-- Reset Password -->
+                    <td>
+                        <button class="btn btn-sm btn-warning"
+                                onclick="showReset({{ user.id }}, '{{ user.username }}')">
+                            Reset
+                        </button>
+                    </td>
+
+                    <!-- Actions -->
+                    <td>
+                        {% if user.username != 'admin' %}
+                        <form action="{{ url_for('dashboard.toggle_user', id=user.id) }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-{{ 'secondary' if user.active else 'success' }}"
+                                    onclick="return confirm('Toggle {{ user.username }}?')">
+                                {{ 'Disable' if user.active else 'Enable' }}
+                            </button>
+                        </form>
+                        <form action="{{ url_for('dashboard.delete_user', id=user.id) }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-danger"
+                                    onclick="return confirm('Delete {{ user.username }}?')">
+                                Delete
+                            </button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted small">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Reset Modal -->
+<div class="modal fade" id="resetModal" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h6 class="modal-title">Reset Password</h6>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <form id="resetForm" method="POST">
+                <div class="modal-body">
+                    <p class="small text-muted mb-2">
+                        User: <strong id="resetUser"></strong>
+                    </p>
+                    <input type="password" name="new_password" class="form-control"
+                           placeholder="New Password" minlength="6" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm"
+                            data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning btn-sm">Reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('searchInput').addEventListener('input', function() {
+    const s = this.value.toLowerCase();
+    document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+        row.style.display = row.textContent.toLowerCase().includes(s) ? '' : 'none';
+    });
+});
+
+function showReset(id, username) {
+    document.getElementById('resetUser').textContent = username;
+    document.getElementById('resetForm').action = `/dashboard/users/${id}/reset-password`;
+    new bootstrap.Modal(document.getElementById('resetModal')).show();
+}
+</script>
+{% endblock %}

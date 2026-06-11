@@ -1,0 +1,62 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Request Comp Off{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Request Comp Off</h2>
+    <a href="{{ url_for('self_service.my_leaves') }}" class="btn btn-secondary">Back</a>
+</div>
+
+<div class="alert alert-warning">
+    Sunday ya Holiday pe kaam kiya? Comp Off request karo.
+    HR approve karega aur balance mein +1 add hoga.
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Work Type</label>
+                        <select name="work_type" class="form-select" required>
+                            <option value="Sunday Working">Sunday Working</option>
+                            <option value="Holiday Working">Holiday Working</option>
+                            <option value="Extra Hours">Extra Hours</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Work Date</label>
+                        <input type="date" name="work_date" class="form-control"
+                               required id="work_date">
+                        <div id="day_info" class="mt-1"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Work Done</label>
+                        <textarea name="reason" class="form-control" rows="4"
+                                  required placeholder="Describe the work..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 btn-lg">
+                        Submit Request
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('work_date').addEventListener('change', function() {
+    const d = new Date(this.value);
+    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const el = document.getElementById('day_info');
+    if (d.getDay() === 0) {
+        el.innerHTML = '<span class="badge bg-success">✅ Sunday — eligible!</span>';
+    } else {
+        el.innerHTML = `<span class="badge bg-secondary">${days[d.getDay()]} — Non-Sunday</span>`;
+    }
+});
+</script>
+{% endblock %}

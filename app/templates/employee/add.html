@@ -1,0 +1,229 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Add Employee{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Add Employee</h2>
+    <a href="{{ url_for('employees.list_employees') }}" class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+
+                <!-- Photo -->
+                <div class="col-12 text-center">
+                    <div id="photo-div" style="width:80px; height:80px; border-radius:50%;
+                         background:linear-gradient(135deg,#667eea,#764ba2);
+                         display:flex; align-items:center; justify-content:center;
+                         font-size:2rem; color:white; margin:0 auto;"></div>
+                    <img id="photo-preview" src="" width="80" height="80"
+                         style="border-radius:50%; object-fit:cover;
+                                border:3px solid #667eea; display:none;">
+                    <div class="mt-2">
+                        <label class="btn btn-sm btn-outline-primary">
+                            Upload Photo
+                            <input type="file" name="photo" accept="image/*"
+                                   onchange="previewPhoto(this)" style="display:none;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Basic Info -->
+                <div class="col-md-6">
+                    <label class="form-label">First Name *</label>
+                    <input type="text" name="first_name" class="form-control"
+                           required id="first_name">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name *</label>
+                    <input type="text" name="last_name" class="form-control"
+                           required id="last_name">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" name="employee_id" class="form-control"
+                           value="{{ next_id }}" readonly style="background:#e9ecef;">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" name="date_of_birth" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-select">
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Blood Group</label>
+                    <select name="blood_group" class="form-select">
+                        <option value="">Select</option>
+                        {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                        <option value="{{ bg }}">{{ bg }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Department</label>
+                    <input type="text" name="department" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Designation</label>
+                    <input type="text" name="designation" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Joining Date</label>
+                    <input type="date" name="date_joined" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employment Type</label>
+                    <select name="employment_type" class="form-select">
+                        <option value="Full-time">Full-time</option>
+                        <option value="Part-time">Part-time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Intern">Intern</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Salary (₹)</label>
+                    <input type="number" name="salary" class="form-control" step="0.01">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Marital Status</label>
+                    <select name="marital_status" class="form-select">
+                        <option value="Single">Single</option>
+                        <option value="Married">Married</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nationality</label>
+                    <input type="text" name="nationality" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Emergency Contact</label>
+                    <input type="text" name="emergency_contact" class="form-control">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control" rows="2"></textarea>
+                </div>
+
+                <!--  LOGIN ACCOUNT SECTION -->
+                <div class="col-12">
+                    <div class="card"
+                         style="border: 2px solid #667eea !important;">
+                        <div class="card-header"
+                             style="background: linear-gradient(135deg,#667eea,#764ba2);">
+                            <div class="form-check form-switch mb-0">
+                                <input type="checkbox" class="form-check-input"
+                                       id="create_account" name="create_account"
+                                       value="1" role="switch"
+                                       onchange="toggleAccount(this)"
+                                       checked>
+                                <label class="form-check-label fw-bold text-white"
+                                       for="create_account">
+                                     Create Login Account (Recommended)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="card-body" id="account_section">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Username</label>
+                                    <input type="text" name="username"
+                                           class="form-control" id="username_field"
+                                           placeholder="Auto generated">
+                                    <small class="text-muted">
+                                        Employee login username
+                                    </small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Password</label>
+                                    <input type="text" name="acc_password"
+                                           class="form-control"
+                                           value="Pass@123"
+                                           placeholder="Min 6 characters">
+                                    <small class="text-muted">Default: Pass@123</small>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Role</label>
+                                    <select name="role_id" class="form-select">
+                                        <option value="3">
+                                             Viewer (Normal Employee)
+                                        </option>
+                                        <option value="2">
+                                             HR Manager
+                                        </option>
+                                        <option value="1">
+                                             Admin
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">
+                                        Normal employee = Viewer
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                         Save Employee
+                    </button>
+                    <a href="{{ url_for('employees.list_employees') }}"
+                       class="btn btn-secondary btn-lg">Cancel</a>
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Auto username generate
+document.getElementById('first_name').addEventListener('input', autoUsername);
+document.getElementById('last_name').addEventListener('input', autoUsername);
+
+function autoUsername() {
+    const first = document.getElementById('first_name').value.toLowerCase().trim();
+    const last = document.getElementById('last_name').value.toLowerCase().trim();
+    document.getElementById('username_field').value =
+        (first + last).replace(/\s/g, '');
+}
+
+function toggleAccount(checkbox) {
+    const section = document.getElementById('account_section');
+    section.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('photo-div').style.display = 'none';
+            const preview = document.getElementById('photo-preview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

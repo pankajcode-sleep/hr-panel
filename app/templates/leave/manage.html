@@ -1,0 +1,117 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Manage Leaves{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Leaves</h2>
+    <a href="/leave/report" class="btn btn-info">Leave Report</a>
+</div>
+
+<div class="d-flex gap-2 mb-4">
+    <a href="/leave/manage?status=Pending"
+       class="btn btn-{{ 'warning' if status_filter == 'Pending' else 'outline-warning' }}">
+       Pending
+    </a>
+    <a href="/leave/manage?status=Approved"
+       class="btn btn-{{ 'success' if status_filter == 'Approved' else 'outline-success' }}">
+       Approved
+    </a>
+    <a href="/leave/manage?status=Rejected"
+       class="btn btn-{{ 'danger' if status_filter == 'Rejected' else 'outline-danger' }}">
+       Rejected
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">Leave Applications</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th>Employee</th><th>Type</th><th>From</th>
+                    <th>To</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for leave in leaves %}
+                <tr>
+                    <td>
+                        <strong>{{ leave.employee.full_name }}</strong><br>
+                        <small class="text-muted">{{ leave.employee.employee_id }}</small>
+                    </td>
+                    <td><span class="badge bg-primary">{{ leave.leave_type }}</span></td>
+                    <td>{{ leave.from_date }}</td>
+                    <td>{{ leave.to_date }}</td>
+                    <td>{{ leave.total_days }}</td>
+                    <td>{{ leave.reason or '-' }}</td>
+                    <td>
+                        <span class="badge bg-{{
+                            'warning' if leave.status == 'Pending' else
+                            'success' if leave.status == 'Approved' else
+                            'danger' }}">{{ leave.status }}</span>
+                    </td>
+                    <td>
+                        {% if leave.status == 'Pending' %}
+                        <form action="/leave/approve/{{ leave.id }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-success">Approve</button>
+                        </form>
+                        <form action="/leave/reject/{{ leave.id }}"
+                              method="POST" class="d-inline"
+                              onsubmit="
+                                var r=prompt('Rejection reason:');
+                                if(!r) return false;
+                                this.querySelector('[name=reject_reason]').value=r;">
+                            <input type="hidden" name="reject_reason" value="">
+                            <button class="btn btn-sm btn-danger">Reject</button>
+                        </form>
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted py-4">
+                        No {{ status_filter }} leaves.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if comp_offs %}
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">Pending Comp Off Requests</div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Employee</th><th>Work Date</th><th>Reason</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for comp in comp_offs %}
+                <tr>
+                    <td>
+                        <strong>{{ comp.employee.full_name }}</strong><br>
+                        <small>{{ comp.employee.employee_id }}</small>
+                    </td>
+                    <td>{{ comp.work_date }}</td>
+                    <td>{{ comp.reason or '-' }}</td>
+                    <td>
+                        <form action="/leave/comp-off/approve/{{ comp.id }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-success">Approve (+1)</button>
+                        </form>
+                        <form action="/leave/comp-off/reject/{{ comp.id }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-danger">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

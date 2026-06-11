@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Payslip - {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Generate Payslip</h2>
+    <a href="{{ url_for('employees.view_employee', id=employee.id) }}"
+       class="btn btn-secondary">Back</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                {{ employee.full_name }} — Payslip
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Month</label>
+                        <select name="month" class="form-select" required>
+                            {% for m in range(1, 13) %}
+                            <option value="{{ m }}">
+                                {{ ['Jan','Feb','Mar','Apr','May','Jun',
+                                    'Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Year</label>
+                        <select name="year" class="form-select" required>
+                            {% for y in [2024, 2025, 2026] %}
+                            <option value="{{ y }}" {{ 'selected' if y == 2025 }}>{{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% if not employee.salary %}
+                    <div class="alert alert-warning">Salary not set!</div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary w-100"
+                            {{ 'disabled' if not employee.salary }}>
+                        Download Payslip PDF
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

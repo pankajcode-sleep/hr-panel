@@ -1,0 +1,87 @@
+{% extends 'layouts/base.html' %}
+{% block title %}New Announcement{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2> New Announcement</h2>
+    <a href="{{ url_for('announcement.manage') }}" class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Title *</label>
+                        <input type="text" name="title" class="form-control"
+                               required maxlength="200" id="title-input">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Content *</label>
+                        <textarea name="content" class="form-control" rows="5"
+                                  required id="content-input"></textarea>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Type</label>
+                            <select name="type" class="form-select" id="type-select">
+                                {% for key, data in types.items() %}
+                                <option value="{{ key }}">
+                                    {{ data.icon }} {{ data.label }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Priority</label>
+                            <select name="priority" class="form-select">
+                                {% for key, data in priorities.items() %}
+                                <option value="{{ key }}">{{ data.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Expires On</label>
+                            <input type="date" name="expires_on" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-4 p-3 rounded" id="preview-box"
+                         style="border-left:4px solid #667eea; background:#ebf4ff;">
+                        <strong id="preview-title">Preview...</strong>
+                        <p class="mb-0 mt-1 text-muted small" id="preview-content"></p>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                         Publish
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const typeColors = {
+    {% for key, data in types.items() %}
+    '{{ key }}': {color:'{{ data.color }}', bg:'{{ data.bg }}', icon:'{{ data.icon }}'},
+    {% endfor %}
+};
+
+function updatePreview() {
+    const title = document.getElementById('title-input').value || 'Title...';
+    const content = document.getElementById('content-input').value || 'Content...';
+    const type = document.getElementById('type-select').value;
+    const data = typeColors[type];
+    document.getElementById('preview-title').textContent = data.icon + ' ' + title;
+    document.getElementById('preview-content').textContent = content;
+    document.getElementById('preview-box').style.borderLeftColor = data.color;
+    document.getElementById('preview-box').style.background = data.bg;
+}
+document.getElementById('title-input').addEventListener('input', updatePreview);
+document.getElementById('content-input').addEventListener('input', updatePreview);
+document.getElementById('type-select').addEventListener('change', updatePreview);
+</script>
+{% endblock %}

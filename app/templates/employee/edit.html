@@ -1,0 +1,169 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Edit {{ employee.full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Edit Employee</h2>
+    <a href="{{ url_for('employees.view_employee', id=employee.id) }}"
+       class="btn btn-secondary">Cancel</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-3">
+
+                <div class="col-12 text-center">
+                    {% if employee.photo %}
+                    <img id="photo-preview"
+                         src="{{ url_for('static', filename='uploads/photos/' + employee.photo) }}"
+                         width="80" height="80"
+                         style="border-radius:50%; object-fit:cover; border:3px solid #667eea;">
+                    {% else %}
+                    <div id="photo-div" style="width:80px; height:80px; border-radius:50%;
+                         background:linear-gradient(135deg,#667eea,#764ba2);
+                         display:flex; align-items:center; justify-content:center;
+                         font-size:28px; color:white; font-weight:700; margin:0 auto;">
+                        {{ employee.first_name[0] }}{{ employee.last_name[0] }}
+                    </div>
+                    <img id="photo-preview" src="" width="80" height="80"
+                         style="border-radius:50%; object-fit:cover;
+                                border:3px solid #667eea; display:none;">
+                    {% endif %}
+                    <div class="mt-2">
+                        <label class="btn btn-sm btn-outline-primary">
+                            Change Photo
+                            <input type="file" name="photo" accept="image/*"
+                                   onchange="previewPhoto(this)" style="display:none;">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">First Name *</label>
+                    <input type="text" name="first_name" class="form-control"
+                           value="{{ employee.first_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Last Name *</label>
+                    <input type="text" name="last_name" class="form-control"
+                           value="{{ employee.last_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email *</label>
+                    <input type="email" name="email" class="form-control"
+                           value="{{ employee.email }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employee ID</label>
+                    <input type="text" name="employee_id" class="form-control"
+                           value="{{ employee.employee_id }}" readonly
+                           style="background:#e9ecef;">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-control"
+                           value="{{ employee.phone or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Date of Birth</label>
+                    <input type="date" name="date_of_birth" class="form-control"
+                           value="{{ employee.date_of_birth or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Gender</label>
+                    <select name="gender" class="form-select">
+                        {% for g in ['Male', 'Female', 'Other'] %}
+                        <option value="{{ g }}" {{ 'selected' if employee.gender == g }}>
+                            {{ g }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Blood Group</label>
+                    <select name="blood_group" class="form-select">
+                        <option value="">Select</option>
+                        {% for bg in ['A+','A-','B+','B-','AB+','AB-','O+','O-'] %}
+                        <option value="{{ bg }}" {{ 'selected' if employee.blood_group == bg }}>
+                            {{ bg }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Department</label>
+                    <input type="text" name="department" class="form-control"
+                           value="{{ employee.department or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Designation</label>
+                    <input type="text" name="designation" class="form-control"
+                           value="{{ employee.designation or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Joining Date</label>
+                    <input type="date" name="date_joined" class="form-control"
+                           value="{{ employee.date_joined or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Employment Type</label>
+                    <select name="employment_type" class="form-select">
+                        {% for t in ['Full-time', 'Part-time', 'Contract', 'Intern'] %}
+                        <option value="{{ t }}"
+                            {{ 'selected' if employee.employment_type == t }}>{{ t }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for s in ['Active', 'Inactive', 'Terminated', 'On Leave'] %}
+                        <option value="{{ s }}"
+                            {{ 'selected' if employee.status == s }}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Salary (₹)</label>
+                    <input type="number" name="salary" class="form-control"
+                           step="0.01" value="{{ employee.salary or '' }}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Emergency Contact</label>
+                    <input type="text" name="emergency_contact" class="form-control"
+                           value="{{ employee.emergency_contact or '' }}">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Address</label>
+                    <textarea name="address" class="form-control"
+                              rows="2">{{ employee.address or '' }}</textarea>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{{ url_for('employees.view_employee', id=employee.id) }}"
+                       class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.getElementById('photo-div');
+            if (div) div.style.display = 'none';
+            const preview = document.getElementById('photo-preview');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+{% endblock %}

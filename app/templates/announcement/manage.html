@@ -1,0 +1,79 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Manage Announcements{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Manage Announcements</h2>
+    <a href="{{ url_for('announcement.create') }}" class="btn btn-primary">+ New</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Title</th><th>Type</th><th>Priority</th>
+                    <th>Status</th><th>Created</th><th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ann in announcements %}
+                <tr class="{{ 'table-secondary' if not ann.is_active or ann.is_expired }}">
+                    <td>
+                        <span>{{ ann.type_data.icon }}</span>
+                        <strong>{{ ann.title }}</strong><br>
+                        <small class="text-muted">{{ ann.content[:50] }}...</small>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              style="background:{{ ann.type_data.color }};">
+                            {{ ann.type_data.label }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge"
+                              style="background:{{ ann.priority_data.color }};">
+                            {{ ann.priority_data.label }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if ann.is_expired %}
+                        <span class="badge bg-secondary">Expired</span>
+                        {% elif ann.is_active %}
+                        <span class="badge bg-success">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger">Hidden</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <small>{{ ann.created_at.strftime('%d %b %Y') }}</small><br>
+                        <small class="text-muted">by {{ ann.creator.username }}</small>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('announcement.edit', id=ann.id) }}"
+                           class="btn btn-sm btn-warning">Edit</a>
+                        <form action="{{ url_for('announcement.toggle', id=ann.id) }}"
+                              method="POST" class="d-inline">
+                            <button class="btn btn-sm btn-{{ 'secondary' if ann.is_active else 'success' }}">
+                                {{ 'Hide' if ann.is_active else 'Show' }}
+                            </button>
+                        </form>
+                        <form action="{{ url_for('announcement.delete', id=ann.id) }}"
+                              method="POST" class="d-inline"
+                              onsubmit="return confirm('Delete?')">
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        No announcements.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

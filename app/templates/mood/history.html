@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Mood History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Mood History</h2>
+    <a href="{{ url_for('mood.submit') }}" class="btn btn-primary">Submit Today</a>
+</div>
+
+{% if moods %}
+<div class="row g-3">
+    {% for mood in moods %}
+    <div class="col-md-3 col-6">
+        <div class="card shadow-sm p-3 text-center"
+             style="border-top:3px solid {{ mood_data[mood.mood].color }} !important;">
+            <small class="text-muted">{{ mood.date.strftime('%d %b %Y') }}</small>
+            <div style="font-size:2.5rem; margin:0.5rem 0;">{{ mood.mood_emoji }}</div>
+            <span class="badge"
+                  style="background:{{ mood_data[mood.mood].color }};">
+                {{ mood_data[mood.mood].label }}
+            </span>
+            {% if mood.note %}
+            <p class="text-muted mt-2 mb-0"
+               style="font-size:0.75rem; font-style:italic;">
+                "{{ mood.note[:40] }}"
+            </p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <div style="font-size:4rem;"></div>
+    <h4 class="text-muted">No history yet</h4>
+    <a href="{{ url_for('mood.submit') }}" class="btn btn-primary mt-3">
+        Submit Today's Mood
+    </a>
+</div>
+{% endif %}
+{% endblock %}

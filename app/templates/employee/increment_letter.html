@@ -1,0 +1,40 @@
+{% extends 'layouts/base.html' %}
+{% block title %}Increment Letter{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Increment Letter</h2>
+    <a href="{{ url_for('employees.view_employee', id=employee.id) }}"
+       class="btn btn-secondary">Back</a>
+</div>
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">
+                {{ employee.full_name }} — Increment Letter
+            </div>
+            <div class="card-body p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Current Salary (₹)</label>
+                        <input type="number" name="old_salary" class="form-control"
+                               value="{{ employee.salary or '' }}" step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">New Salary (₹)</label>
+                        <input type="number" name="new_salary" class="form-control"
+                               step="0.01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Effective Date</label>
+                        <input type="date" name="effective_date" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        Download PDF
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

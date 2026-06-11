@@ -1,0 +1,164 @@
+{% extends 'layouts/base.html' %}
+{% block title %}My Portal{% endblock %}
+
+{% block content %}
+<div class="card mb-4" style="background:linear-gradient(135deg,#667eea,#764ba2); border:none;">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3">
+            {% if employee.photo %}
+            <img src="{{ url_for('static', filename='uploads/photos/' + employee.photo) }}"
+                 width="60" height="60"
+                 style="border-radius:50%; object-fit:cover; border:3px solid rgba(255,255,255,0.5);">
+            {% else %}
+            <div style="width:60px; height:60px; border-radius:50%;
+                        background:rgba(255,255,255,0.2); display:flex;
+                        align-items:center; justify-content:center;
+                        font-size:24px; color:white; font-weight:700;">
+                {{ employee.first_name[0] }}{{ employee.last_name[0] }}
+            </div>
+            {% endif %}
+            <div>
+                <h4 style="color:white; margin:0;">Welcome, {{ employee.first_name }}! 👋</h4>
+                <p style="color:rgba(255,255,255,0.8); margin:0; font-size:0.9rem;">
+                    {{ employee.designation or 'Employee' }} | {{ employee.department or 'General' }}
+                </p>
+                <p style="color:rgba(255,255,255,0.6); margin:0; font-size:0.8rem;">
+                    {{ employee.employee_id }} | {{ today.strftime('%d %B %Y') }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm border-success">
+            <div class="card-body py-3">
+                <h6 class="text-muted small">CL Balance</h6>
+                <h3 class="text-success mb-0">{{ balance.casual_leave }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm border-info">
+            <div class="card-body py-3">
+                <h6 class="text-muted small">SL Balance</h6>
+                <h3 class="text-info mb-0">{{ balance.sick_leave }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm border-warning">
+            <div class="card-body py-3">
+                <h6 class="text-muted small">Comp Off</h6>
+                <h3 class="text-warning mb-0">{{ balance.comp_off }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card text-center shadow-sm border-primary">
+            <div class="card-body py-3">
+                <h6 class="text-muted small">Present ({{ month_name }})</h6>
+                <h3 class="text-primary mb-0">{{ att_summary.present }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">Quick Actions</div>
+    <div class="card-body d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('self_service.apply_leave_self') }}" class="btn btn-primary">
+            📝 Apply Leave
+        </a>
+        <a href="{{ url_for('self_service.request_comp_off') }}" class="btn btn-warning">
+            🔄 Comp Off
+        </a>
+        <a href="{{ url_for('self_service.my_salary') }}" class="btn btn-success">
+            💰 Salary Slip
+        </a>
+        <a href="{{ url_for('self_service.my_attendance') }}" class="btn btn-info">
+            📊 Attendance
+        </a>
+        <a href="{{ url_for('mood.submit') }}" class="btn btn-secondary">
+            😊 My Mood
+        </a>
+        <a href="{{ url_for('attendance.punch') }}" class="btn btn-dark">
+            📍 Punch In/Out
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white">Today's Attendance</div>
+            <div class="card-body text-center p-4">
+                {% if today_att and today_att.check_in %}
+                <span class="badge bg-success fs-6 p-3">✅ Punched In</span>
+                <p class="fs-5 fw-bold mt-3 mb-1">
+                    In: {{ today_att.check_in.strftime('%I:%M %p') }}
+                </p>
+                {% if today_att.check_out %}
+                <p class="fs-5 fw-bold mb-1">
+                    Out: {{ today_att.check_out.strftime('%I:%M %p') }}
+                </p>
+                <p class="text-success">{{ today_att.working_hours }} hrs</p>
+                {% endif %}
+                {% if today_att.is_late %}
+                <span class="badge bg-warning text-dark">
+                    Late by {{ today_att.late_minutes }} min
+                </span>
+                {% endif %}
+                {% else %}
+                <span class="badge bg-secondary fs-6 p-3">⏰ Not Marked</span>
+                <p class="text-muted mt-2 small">Office: 9:00 AM</p>
+                {% endif %}
+                <div class="mt-3">
+                    <a href="{{ url_for('attendance.punch') }}"
+                       class="btn btn-primary btn-sm">Go to Punch</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-dark text-white d-flex justify-content-between">
+                <span>Recent Leaves</span>
+                <a href="{{ url_for('self_service.my_leaves') }}"
+                   class="btn btn-sm btn-outline-light">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr><th>Type</th><th>From</th><th>Days</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in recent_leaves %}
+                        <tr>
+                            <td><span class="badge bg-primary">{{ leave.leave_type }}</span></td>
+                            <td>{{ leave.from_date.strftime('%d %b') }}</td>
+                            <td>{{ leave.total_days }}</td>
+                            <td>
+                                <span class="badge bg-{{
+                                    'warning' if leave.status == 'Pending' else
+                                    'success' if leave.status == 'Approved' else
+                                    'danger' if leave.status == 'Rejected' else
+                                    'secondary' }}">{{ leave.status }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-3">
+                                No leaves yet
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

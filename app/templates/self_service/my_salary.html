@@ -1,0 +1,87 @@
+{% extends 'layouts/base.html' %}
+{% block title %}My Salary{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>My Salary Slip</h2>
+    <a href="{{ url_for('self_service.portal') }}" class="btn btn-secondary">Back</a>
+</div>
+
+{% if not employee.salary %}
+<div class="alert alert-warning">Salary not set. Contact HR.</div>
+{% else %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-dark text-white">Salary Breakdown</div>
+            <div class="card-body">
+                {% set salary = employee.salary|float %}
+                {% set hra = salary * 0.40 %}
+                {% set transport = salary * 0.10 %}
+                {% set medical = salary * 0.05 %}
+                {% set gross = salary + hra + transport + medical %}
+                {% set pf = salary * 0.12 %}
+                {% set tax = gross * 0.05 %}
+                {% set net = gross - pf - tax %}
+                <table class="table mb-0">
+                    <tr class="table-success"><td><strong>Basic</strong></td>
+                        <td class="text-end">₹ {{ "%.2f"|format(salary) }}</td></tr>
+                    <tr><td>HRA (40%)</td>
+                        <td class="text-end">₹ {{ "%.2f"|format(hra) }}</td></tr>
+                    <tr><td>Transport (10%)</td>
+                        <td class="text-end">₹ {{ "%.2f"|format(transport) }}</td></tr>
+                    <tr><td>Medical (5%)</td>
+                        <td class="text-end">₹ {{ "%.2f"|format(medical) }}</td></tr>
+                    <tr class="table-primary">
+                        <td><strong>Gross</strong></td>
+                        <td class="text-end"><strong>₹ {{ "%.2f"|format(gross) }}</strong></td></tr>
+                    <tr class="table-danger">
+                        <td>PF (12%)</td>
+                        <td class="text-end">- ₹ {{ "%.2f"|format(pf) }}</td></tr>
+                    <tr class="table-danger">
+                        <td>Tax (5%)</td>
+                        <td class="text-end">- ₹ {{ "%.2f"|format(tax) }}</td></tr>
+                    <tr class="table-success">
+                        <td><strong>NET SALARY</strong></td>
+                        <td class="text-end"><strong>₹ {{ "%.2f"|format(net) }}</strong></td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">Download Payslip</div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('self_service.download_payslip') }}">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <select name="month" class="form-select">
+                                {% for m in range(1, 13) %}
+                                <option value="{{ m }}"
+                                    {{ 'selected' if m == today.month }}>
+                                    {{ ['Jan','Feb','Mar','Apr','May','Jun',
+                                        'Jul','Aug','Sep','Oct','Nov','Dec'][m-1] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <select name="year" class="form-select">
+                                {% for y in [2024, 2025, 2026] %}
+                                <option value="{{ y }}"
+                                    {{ 'selected' if y == today.year }}>{{ y }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-success w-100">
+                                Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

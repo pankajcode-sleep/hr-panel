@@ -1,0 +1,73 @@
+{% extends 'layouts/base.html' %}
+{% block title %}{{ employee.full_name }} Attendance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ employee.full_name }} — {{ month_name }} {{ year }}</h2>
+    <a href="{{ url_for('attendance.monthly_report', month=month, year=year) }}"
+       class="btn btn-secondary">Back</a>
+</div>
+
+<div class="row g-3 mb-4">
+    {% for key, val in summary.items() %}
+    <div class="col-4 col-md-2">
+        <div class="card text-center shadow-sm py-2">
+            <h5 class="mb-0">{{ val }}</h5>
+            <small class="text-muted">{{ key }}</small>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-bordered mb-0" style="font-size:0.85rem;">
+            <thead class="table-dark">
+                <tr>
+                    <th>Date</th><th>Day</th><th>Status</th>
+                    <th>In</th><th>Out</th><th>Hours</th><th>Late</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for day in all_dates %}
+                <tr class="{{ 'table-secondary' if day.is_sunday else
+                              'table-success' if day.record and day.record.status == 'Present' else
+                              'table-danger' if day.record and day.record.status == 'Absent' else
+                              'table-warning' if day.record and day.record.status == 'Late' else '' }}">
+                    <td>
+                        {{ day.date.strftime('%d %b') }}
+                        {% if day.is_today %}
+                        <span class="badge bg-dark">Today</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ day.date.strftime('%a') }}</td>
+                    <td>
+                        {% if day.is_sunday %}
+                        <span class="badge bg-secondary">Sunday</span>
+                        {% elif day.record %}
+                        <span class="badge bg-{{
+                            'success' if day.record.status == 'Present' else
+                            'danger' if day.record.status == 'Absent' else
+                            'warning' if day.record.status == 'Late' else
+                            'info' if day.record.status == 'WFH' else 'secondary' }}">
+                            {{ day.record.status }}
+                        </span>
+                        {% else %}
+                        <span class="badge bg-secondary">Not Marked</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ day.record.check_in.strftime('%I:%M %p') if day.record and day.record.check_in else '-' }}</td>
+                    <td>{{ day.record.check_out.strftime('%I:%M %p') if day.record and day.record.check_out else '-' }}</td>
+                    <td>{{ day.record.working_hours if day.record and day.record.working_hours else '-' }}</td>
+                    <td>
+                        {% if day.record and day.record.late_minutes and day.record.late_minutes > 0 %}
+                        <span class="text-danger">{{ day.record.late_minutes }}m</span>
+                        {% else %}-{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
